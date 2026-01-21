@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import type { Event } from "@/data/festivalData";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useRazorpay } from "@/hooks/useRazorpay";
 
 interface RegistrationModalProps {
   event: Event | null;
@@ -16,7 +17,7 @@ interface RegistrationModalProps {
 
 export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalProps) => {
   const [step, setStep] = useState<"form" | "payment" | "success">("form");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentId, setPaymentId] = useState("");
   const [formData, setFormData] = useState({
     name: "",
@@ -25,28 +26,11 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
     college: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.phone || !formData.college) {
-      toast.error("Please fill all fields");
-      return;
-    }
-    setIsLoading(true);
-    setTimeout(() => {
-      setStep("payment");
-      setIsLoading(false);
-    }, 1000);
-  };
-
   const sendConfirmationEmail = async (generatedPaymentId: string) => {
     if (!event) return;
     
     try {
-      const { data, error } = await supabase.functions.invoke("send-confirmation-email", {
+      await supabase.functions.invoke("send-confirmation-email", {
         body: {
           name: formData.name,
           email: formData.email,
@@ -60,31 +44,53 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
           paymentId: generatedPaymentId,
         },
       });
-
-      if (error) {
-        console.error("Email error:", error);
-        toast.error("Registration successful but email failed to send");
-      } else {
-        toast.success("Confirmation email sent!");
-      }
+      toast.success("Confirmation email sent!");
     } catch (err) {
       console.error("Email send error:", err);
     }
   };
 
+  const { initiatePayment, isLoading: isPaymentLoading } = useRazorpay({
+    onSuccess: async (razorpayPaymentId) => {
+      setPaymentId(razorpayPaymentId);
+      await sendConfirmationEmail(razorpayPaymentId);
+      setStep("success");
+      toast.success("Payment successful!");
+    },
+    onFailure: (error) => {
+      toast.error(error || "Payment failed");
+    },
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.phone || !formData.college) {
+      toast.error("Please fill all fields");
+      return;
+    }
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setStep("payment");
+      setIsSubmitting(false);
+    }, 500);
+  };
+
   const handlePayment = async () => {
-    setIsLoading(true);
-    // Simulated payment - replace with Razorpay integration
-    const generatedPaymentId = `PAY_${Date.now()}`;
-    setPaymentId(generatedPaymentId);
+    if (!event) return;
     
-    toast.info("Razorpay integration ready - configure API keys to enable payments");
-    
-    // Send confirmation email
-    await sendConfirmationEmail(generatedPaymentId);
-    
-    setStep("success");
-    setIsLoading(false);
+    await initiatePayment({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      college: formData.college,
+      eventId: event.id,
+      eventName: event.name,
+      entryFee: event.entryFee,
+    });
   };
 
   const handleClose = () => {
@@ -95,6 +101,8 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
   };
 
   if (!event) return null;
+
+  const isLoading = isSubmitting || isPaymentLoading;
 
   return (
     <AnimatePresence>
@@ -113,7 +121,7 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
             onClick={(e) => e.stopPropagation()}
             className="glass-card w-full max-w-lg p-6 md:p-8 relative overflow-hidden"
           >
-            <button onClick={handleClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+            <button onClick={handleClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground" disabled={isLoading}>
               <X className="w-6 h-6" />
             </button>
 
@@ -144,8 +152,9 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
                   <p><strong>Email:</strong> {formData.email}</p>
                 </div>
                 <Button variant="festival" size="lg" className="w-full" onClick={handlePayment} disabled={isLoading}>
-                  {isLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing Payment...</> : `Pay ₹${event.entryFee} with Razorpay`}
+                  {isLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Opening Razorpay...</> : `Pay ₹${event.entryFee} with Razorpay`}
                 </Button>
+                <p className="text-xs text-muted-foreground mt-4">Secure payment powered by Razorpay</p>
               </div>
             )}
 
@@ -158,7 +167,7 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
                 <p className="text-muted-foreground mb-6">Confirmation email sent to {formData.email}</p>
                 <div className="glass-card p-4 mb-6 text-left text-sm">
                   <p><strong>Event:</strong> {event.name}</p>
-                  <p><strong>Payment ID:</strong> {paymentId}</p>
+                  <p><strong>Payment ID:</strong> <span className="font-mono text-secondary">{paymentId}</span></p>
                   <p><strong>Amount:</strong> ₹{event.entryFee}</p>
                 </div>
                 <Button variant="festivalOutline" size="lg" onClick={handleClose}>Back to Events</Button>
