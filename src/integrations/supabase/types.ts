@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      registrations: {
+        Row: {
+          college: string
+          created_at: string
+          email: string
+          entry_fee: number
+          event_id: string
+          event_name: string
+          id: string
+          name: string
+          payment_status: string
+          phone: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          razorpay_signature: string | null
+          updated_at: string
+        }
+        Insert: {
+          college: string
+          created_at?: string
+          email: string
+          entry_fee: number
+          event_id: string
+          event_name: string
+          id?: string
+          name: string
+          payment_status?: string
+          phone: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          updated_at?: string
+        }
+        Update: {
+          college?: string
+          created_at?: string
+          email?: string
+          entry_fee?: number
+          event_id?: string
+          event_name?: string
+          id?: string
+          name?: string
+          payment_status?: string
+          phone?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
