@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { AnimatedBackground } from "./AnimatedBackground";
-import { CountdownTimer } from "./CountdownTimer";
 import { festivalInfo } from "@/data/festivalData";
 import { ChevronDown, Sparkles, Ticket } from "lucide-react";
 
@@ -15,24 +14,11 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <AnimatedBackground />
       
       {/* Main Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
-        {/* Pre-title */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-6"
-        >
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card text-sm md:text-base text-secondary font-medium">
-            <Sparkles className="w-4 h-4" />
-            March 15-17, 2026 • Central University Campus
-          </span>
-        </motion.div>
-
         {/* Main Title */}
         <motion.h1
           initial={{ opacity: 0, scale: 0.9 }}
@@ -52,19 +38,6 @@ export const HeroSection = () => {
         >
           {festivalInfo.tagline}
         </motion.p>
-
-        {/* Countdown Timer */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="mb-12"
-        >
-          <p className="text-sm text-muted-foreground uppercase tracking-widest mb-4 font-orbitron">
-            Event Starts In
-          </p>
-          <CountdownTimer />
-        </motion.div>
 
         {/* CTA Buttons */}
         <motion.div
@@ -96,13 +69,12 @@ export const HeroSection = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1 }}
-          className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
+          className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto justify-items-center"
         >
           {[
-            { value: "50+", label: "Events" },
-            { value: "10K+", label: "Expected Crowd" },
-            { value: "₹25L+", label: "Prize Pool" },
-            { value: "3", label: "Days of Madness" },
+            { value: "14", label: "Events" },
+            { value: "1K+", label: "Expected Crowd" },
+            { value: "2", label: "Days of Celebration" },
           ].map((stat, index) => (
             <motion.div
               key={stat.label}
@@ -114,7 +86,7 @@ export const HeroSection = () => {
               <p className="text-3xl md:text-4xl font-orbitron font-bold neon-text-pink">
                 {stat.value}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+              <p className={`text-sm text-muted-foreground mt-1 ${stat.label === "Days of Celebration" ? "text-center" : ""}`}>{stat.label}</p>
             </motion.div>
           ))}
         </motion.div>

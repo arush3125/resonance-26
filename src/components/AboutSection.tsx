@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { highlights } from "@/data/festivalData";
+import { SimpleSlideshow } from "@/components/SimpleSlideshow";
 
 export const AboutSection = () => {
   return (
@@ -15,13 +16,13 @@ export const AboutSection = () => {
         >
           <h2 className="section-header mb-4">About The Fest</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Three days of non-stop entertainment, competitions, and unforgettable memories. 
-            VIBRANCE 2026 brings together the best of music, dance, tech, and culture.
+            Two days of non-stop entertainment, competitions, and unforgettable memories. 
+            RESONANCE 26 brings together the best of music, dance, and culture.
           </p>
         </motion.div>
 
         {/* Highlight Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto justify-items-center">
           {highlights.map((highlight, index) => (
             <motion.div
               key={highlight.title}
@@ -60,19 +61,18 @@ export const AboutSection = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
               <h3 className="text-3xl md:text-4xl font-orbitron font-bold gradient-text mb-4">
-                The Biggest Youth Festival
+                Some glimpses of Resonance 25
               </h3>
               <p className="text-muted-foreground mb-6">
-                Join thousands of students from across the country for an experience 
+                Join thousands of students for an experience 
                 that will define your college memories. From electrifying DJ nights to 
-                intense hackathons, from graceful dance performances to creative showcases — 
-                VIBRANCE has it all.
+                intense competitions, from graceful dance performances to creative showcases — 
+                RESONANCE has it all.
               </p>
               <ul className="space-y-3">
                 {[
-                  "50+ competitions across all domains",
-                  "Celebrity performances & DJ nights",
-                  "₹25 Lakh+ total prize pool",
+                  "14+ competitions across all domains",
+                  "performances & DJ nights",
                   "Food stalls, gaming zones & more",
                 ].map((item, i) => (
                   <motion.li
@@ -91,19 +91,7 @@ export const AboutSection = () => {
             </div>
             <div className="relative">
               <div className="aspect-video rounded-2xl overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/30 to-secondary/30 animate-gradient-x bg-300%" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="text-center"
-                  >
-                    <span className="text-6xl md:text-8xl font-orbitron font-black gradient-text">
-                      2026
-                    </span>
-                    <p className="text-lg text-muted-foreground mt-2">March 15-17</p>
-                  </motion.div>
-                </div>
+                <SimpleSlideshow />
               </div>
             </div>
           </div>

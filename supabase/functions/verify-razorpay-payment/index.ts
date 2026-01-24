@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { encode as hexEncode } from "https://deno.land/std@0.190.0/encoding/hex.ts";
@@ -93,10 +94,11 @@ const handler = async (req: Request): Promise<Response> => {
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Payment verification error";
     console.error("Error verifying payment:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

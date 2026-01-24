@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -97,10 +98,11 @@ const handler = async (req: Request): Promise<Response> => {
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to create Razorpay order";
     console.error("Error creating order:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

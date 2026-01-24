@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { encode as hexEncode } from "https://deno.land/std@0.190.0/encoding/hex.ts";
@@ -113,10 +114,11 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ received: true }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Webhook error";
     console.error("Webhook error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

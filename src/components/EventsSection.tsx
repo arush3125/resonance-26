@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { events, categories, type Event } from "@/data/festivalData";
 import { EventCard } from "./EventCard";
-import { RegistrationModal } from "./RegistrationModal";
+import { ProfessionalRegistrationModal } from "./ProfessionalRegistrationModal";
 
 export const EventsSection = () => {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -95,7 +95,7 @@ export const EventsSection = () => {
       </div>
 
       {/* Registration Modal */}
-      <RegistrationModal
+      <ProfessionalRegistrationModal
         event={selectedEvent}
         isOpen={isModalOpen}
         onClose={() => {

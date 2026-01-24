@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin, Users, Trophy } from "lucide-react";
+import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Event } from "@/data/festivalData";
 
@@ -11,8 +11,6 @@ interface EventCardProps {
 const categoryColors = {
   music: "from-primary to-pink-400",
   dance: "from-accent to-purple-400",
-  tech: "from-secondary to-blue-400",
-  gaming: "from-green-500 to-emerald-400",
   fun: "from-highlight to-orange-400",
   culture: "from-red-500 to-rose-400",
 };
@@ -73,14 +71,8 @@ export const EventCard = ({ event, onRegister }: EventCardProps) => {
           </div>
         </div>
 
-        {/* Prize & Fee */}
+        {/* Entry Fee */}
         <div className="flex items-center justify-between mb-4 pt-4 border-t border-border/50">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-highlight" />
-            <span className="text-sm font-medium text-foreground">
-              ₹{event.prizePool.toLocaleString("en-IN")}
-            </span>
-          </div>
           <div className="text-right">
             <span className="text-xs text-muted-foreground">Entry Fee</span>
             <p className="text-lg font-orbitron font-bold text-primary">

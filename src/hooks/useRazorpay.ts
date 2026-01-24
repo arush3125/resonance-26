@@ -88,9 +88,10 @@ export const useRazorpay = ({ onSuccess, onFailure }: UseRazorpayProps) => {
         }
 
         return data;
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Failed to create order";
         console.error("Order creation error:", err);
-        onFailure(err.message);
+        onFailure(message);
         setIsLoading(false);
         return null;
       }
@@ -115,9 +116,10 @@ export const useRazorpay = ({ onSuccess, onFailure }: UseRazorpayProps) => {
         }
 
         return true;
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Payment verification failed";
         console.error("Verification error:", err);
-        onFailure(err.message);
+        onFailure(message);
         return false;
       }
     },
@@ -146,7 +148,7 @@ export const useRazorpay = ({ onSuccess, onFailure }: UseRazorpayProps) => {
         key: orderData.keyId,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "VIBRANCE 2026",
+        name: "RESONANCE 26",
         description: `Registration for ${params.eventName}`,
         order_id: orderData.orderId,
         prefill: {
