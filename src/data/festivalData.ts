@@ -40,6 +40,19 @@ export interface Event {
   image: string;
 }
 
+export interface AuditionEvent {
+  id: string;
+  name: string;
+  category: "dance" | "singing" | "instrument" | "fashion";
+  description: string;
+  rules: string[];
+  formUrl: string;
+  date: string;
+  time: string;
+  venue: string;
+  image: string;
+}
+
 export const events: Event[] = [
   {
     id: "treasure-hunt",
@@ -118,101 +131,6 @@ export const events: Event[] = [
     image: "/events/debate.jpg",
   },
   {
-    id: "singing-solo",
-    name: "Singing (Solo)",
-    category: "music",
-    description: "Showcase your vocal talent. Solo singing competition across all genres.",
-    rules: [
-      "Solo participation only",
-      "3-minute performance",
-      "Karaoke track allowed",
-      "No vulgar lyrics",
-    ],
-    entryFee: 100,
-    teamSize: { min: 1, max: 1 },
-    prizePool: 20000,
-    date: "2025-02-27",
-    time: "5:00 PM",
-    venue: "Music Room",
-    image: "/events/singing-solo.jpg",
-  },
-  {
-    id: "singing-duet",
-    name: "Singing (Duet)",
-    category: "music",
-    description: "Harmonize with a partner. Duet singing competition for perfect pairs.",
-    rules: [
-      "Team of 2 members",
-      "4-minute performance",
-      "Coordination judged",
-      "Karaoke track allowed",
-    ],
-    entryFee: 100,
-    teamSize: { min: 2, max: 2 },
-    prizePool: 25000,
-    date: "2025-02-28",
-    time: "2:00 PM",
-    venue: "Music Room",
-    image: "/events/singing-duet.jpg",
-  },
-  {
-    id: "dance",
-    name: "Dance Competition",
-    category: "dance",
-    description: "Express yourself through movement. Solo and group dance performances.",
-    rules: [
-      "Solo or group (2-15 members)",
-      "5-minute performance limit",
-      "Any dance style allowed",
-      "Music submission required",
-    ],
-    entryFee: 100,
-    teamSize: { min: 1, max: 15 },
-    prizePool: 30000,
-    date: "2025-02-27",
-    time: "3:00 PM",
-    venue: "Dance Hall",
-    image: "/events/dance.jpg",
-  },
-  {
-    id: "group-singing",
-    name: "Group Singing",
-    category: "music",
-    description: "Create magic with voices. Group singing competition for harmonious teams.",
-    rules: [
-      "Team of 4-8 members",
-      "6-minute performance",
-      "Harmony and coordination judged",
-      "Acappella or with music",
-    ],
-    entryFee: 100,
-    teamSize: { min: 4, max: 8 },
-    prizePool: 40000,
-    date: "2025-02-28",
-    time: "11:00 AM",
-    venue: "Music Room",
-    image: "/events/group-singing.jpg",
-  },
-  {
-    id: "musical-instruments",
-    name: "Musical Instruments",
-    category: "music",
-    description: "Instrumental mastery competition. Showcase your skills on any instrument.",
-    rules: [
-      "Solo or group participation (1-10 members)",
-      "5-minute performance",
-      "Any instrument allowed",
-      "Bring your own instrument",
-    ],
-    entryFee: 100,
-    teamSize: { min: 1, max: 10 },
-    prizePool: 25000,
-    date: "2025-02-27",
-    time: "2:00 PM",
-    venue: "Music Room",
-    image: "/events/instruments.jpg",
-  },
-  {
     id: "standup-comedy",
     name: "Stand-up Comedy",
     category: "fun",
@@ -250,25 +168,6 @@ export const events: Event[] = [
     venue: "Open Mic Stage",
     image: "/events/rap-beatbox.jpg",
   },
-  {
-    id: "fashion-show",
-    name: "Fashion Show",
-    category: "culture",
-    description: "Showcase your style and creativity. Runway competition for fashion enthusiasts.",
-    rules: [
-      "Solo participation only",
-      "5-minute runway presentation",
-      "Original designs encouraged",
-      "Props and accessories allowed",
-    ],
-    entryFee: 100,
-    teamSize: { min: 1, max: 1 },
-    prizePool: 35000,
-    date: "2025-02-28",
-    time: "5:00 PM",
-    venue: "Main Stage",
-    image: "/events/fashion-show.jpg",
-  },
 ];
 
 export const schedule = [
@@ -292,6 +191,81 @@ export const schedule = [
       { time: "1:00 PM", name: "Debate", venue: "Seminar Hall" },
       { time: "3:30 PM", name: "On Stage Event", venue: "Main Stage" },
     ],
+  },
+];
+
+export const auditionEvents: AuditionEvent[] = [
+  {
+    id: "dance-audition",
+    name: "Dance Competition",
+    category: "dance",
+    description: "Express yourself through movement. Show your dancing skills and compete with the best performers.",
+    rules: [
+      "Solo or group participation",
+      "3-minute performance limit",
+      "Any dance style allowed",
+      "Music submission required",
+      "Costumes and props allowed",
+    ],
+    formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSe520vOiAUKrOl0OLbPAgWEU6YqcoA7V0pEQ1Wk1RVsY9cGWQ/viewform?usp=dialog",
+    date: "2025-02-27",
+    time: "3:00 PM",
+    venue: "Dance Hall",
+    image: "/events/dance.jpg",
+  },
+  {
+    id: "singing-audition",
+    name: "Singing Competition",
+    category: "singing",
+    description: "Showcase your vocal talent. Solo singing competition across all genres.",
+    rules: [
+      "Solo participation only",
+      "3-minute performance",
+      "Karaoke track allowed",
+      "No vulgar lyrics",
+      "Original compositions welcome",
+    ],
+    formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf6XaVy-I7SVjSu1gF_nG9jkxDgKrMZ_uVzNvLMohaLTHDAmg/viewform?usp=dialog",
+    date: "2025-02-27",
+    time: "5:00 PM",
+    venue: "Music Room",
+    image: "/events/singing-solo.jpg",
+  },
+  {
+    id: "instrument-audition",
+    name: "Musical Instruments",
+    category: "instrument",
+    description: "Instrumental mastery competition. Showcase your skills on any instrument.",
+    rules: [
+      "Solo or group participation (1-10 members)",
+      "5-minute performance",
+      "Any instrument allowed",
+      "Bring your own instrument",
+      "Both classical and modern welcome",
+    ],
+    formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf9IVmhbfoQkOsF6-HxRj5Z9b6f7ixFY4l6eTN8aVGmaIRGQw/viewform?usp=dialog",
+    date: "2025-02-27",
+    time: "2:00 PM",
+    venue: "Music Room",
+    image: "/events/instruments.jpg",
+  },
+  {
+    id: "fashion-audition",
+    name: "Fashion Show",
+    category: "fashion",
+    description: "Showcase your style and creativity. Runway competition for fashion enthusiasts.",
+    rules: [
+      "Solo participation only",
+      "5-minute runway presentation",
+      "Original designs preferred",
+      "Props and accessories allowed",
+      "Theme-based presentations welcome",
+    ],
+    formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf9RkBEPeADIyX4rf0Zk1tnFKT3lYq-vus4s1Za9SauChG87g/viewform?usp=publish-editor",
+    date: "2025-02-28",
+    time: "5:00 PM",
+    venue: "Main Stage",
+    image: "/events/fashion-show.jpg",
   },
 ];
 

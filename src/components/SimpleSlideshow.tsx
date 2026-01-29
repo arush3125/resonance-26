@@ -6,10 +6,14 @@ export const SimpleSlideshow = () => {
 
   // Images from Reso 25 folder
   const slides = [
-    "/Reso 25/MP10 - Copy.webp",
-    "/Reso 25/MP14.jpg",
-    "/Reso 25/MP16 - Copy.jpeg",
-    "/Reso 25/Two_Girls_with_Parasols_at_Fladbury_by_John_Singer_Sargent_1889.jpeg.jpeg"
+    "/Reso 25/WhatsApp Image 2026-01-28 at 5.06.14 PM.jpeg",
+    "/Reso 25/WhatsApp Image 2026-01-28 at 5.06.26 PM.jpeg",
+    "/Reso 25/WhatsApp Image 2026-01-28 at 5.06.31 PM.jpeg",
+    "/Reso 25/WhatsApp Image 2026-01-28 at 5.06.32 PM.jpeg",
+    "/Reso 25/WhatsApp Image 2026-01-28 at 5.06.35 PM.jpeg",
+    "/Reso 25/WhatsApp Image 2026-01-28 at 5.06.37 PM.jpeg",
+    "/Reso 25/WhatsApp Image 2026-01-28 at 5.06.38 PM.jpeg",
+    "/Reso 25/WhatsApp Image 2026-01-28 at 5.06.40 PM.jpeg"
   ];
 
   // Auto-play functionality

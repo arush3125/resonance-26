@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { AnimatedBackground } from "./AnimatedBackground";
+// import { AnimatedBackground } from "./AnimatedBackground";
 import { festivalInfo } from "@/data/festivalData";
 import { ChevronDown, Sparkles, Ticket } from "lucide-react";
 
@@ -15,7 +15,7 @@ export const HeroSection = () => {
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <AnimatedBackground />
+      {/* <AnimatedBackground /> */}
       
       {/* Main Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">

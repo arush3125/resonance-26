@@ -3,7 +3,9 @@ import { Music, Sparkles } from "lucide-react";
 
 export const DJNightSection = () => (
   <section id="dj-night" className="py-32 relative overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/10 to-background" />
+    {/* Background Image */}
+    <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/reso 26.png')" }} />
+    <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-primary/20 to-background/90" />
     <motion.div className="absolute inset-0 opacity-30" animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }} transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }} style={{ background: "radial-gradient(circle at 50% 50%, hsla(320, 100%, 59%, 0.3) 0%, transparent 50%)", backgroundSize: "200% 200%" }} />
     <div className="container mx-auto px-4 relative z-10 text-center">
       <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>

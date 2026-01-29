@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Registration Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .data-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>📊 Festival Registration Data Viewer</h1>
+    
+    <div class="data-section">
+        <h2>📋 Registration Data</h2>
+        <button onclick="viewData('registrationData')">View Registrations</button>
+        <button onclick="clearData('registrationData')">Clear Registrations</button>
+        <div id="registrationData"></div>
+    </div>
+    
+    <div class="data-section">
+        <h2>👥 Team Member Data</h2>
+        <button onclick="viewData('teamMemberData')">View Team Members</button>
+        <button onclick="clearData('teamMemberData')">Clear Team Members</button>
+        <div id="teamMemberData"></div>
+    </div>
+
+    <script>
+        function viewData(dataType) {
+            const data = JSON.parse(localStorage.getItem(dataType) || '[]');
+            const container = document.getElementById(dataType);
+            
+            if (data.length === 0) {
+                container.innerHTML = '<p>No data found.</p>';
+                return;
+            }
+            
+            let html = `<h3>${data.length} records found</h3>`;
+            html += '<table><tr>';
+            
+            // Get headers from first record
+            Object.keys(data[0]).forEach(key => {
+                html += `<th>${key}</th>`;
+            });
+            html += '</tr>';
+            
+            // Add data rows
+            data.forEach(record => {
+                html += '<tr>';
+                Object.values(record).forEach(value => {
+                    html += `<td>${value}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</table>';
+            container.innerHTML = html;
+        }
+        
+        function clearData(dataType) {
+            if (confirm(`Are you sure you want to clear ${dataType}?`)) {
+                localStorage.removeItem(dataType);
+                document.getElementById(dataType).innerHTML = '<p>Data cleared.</p>';
+            }
+        }
+        
+        // Auto-load data on page load
+        window.onload = function() {
+            viewData('registrationData');
+            viewData('teamMemberData');
+        };
+    </script>
+</body>
+</html>

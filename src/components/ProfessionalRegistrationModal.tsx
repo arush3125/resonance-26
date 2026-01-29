@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import type { Event } from "@/data/festivalData";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useRazorpay } from "@/hooks/useRazorpay";
+import { useRazorpayDirect } from "@/hooks/useRazorpayDirect";
 
 interface Participant {
   name: string;
@@ -148,7 +148,7 @@ export const ProfessionalRegistrationModal = ({ event, isOpen, onClose }: Profes
   };
 
   // Razorpay integration
-  const { initiatePayment, isLoading: isPaymentLoading } = useRazorpay({
+  const razorpayHook = useRazorpayDirect({
     onSuccess: async (razorpayPaymentId) => {
       setPaymentId(razorpayPaymentId);
       await saveRegistrationData(razorpayPaymentId);
@@ -159,6 +159,9 @@ export const ProfessionalRegistrationModal = ({ event, isOpen, onClose }: Profes
       toast.error(error || "Payment failed");
     },
   });
+
+  // Use Razorpay payment hook
+  const { initiatePayment, isLoading: isPaymentLoading } = razorpayHook;
 
   const handlePayment = async () => {
     if (!event) return;
@@ -200,6 +203,8 @@ export const ProfessionalRegistrationModal = ({ event, isOpen, onClose }: Profes
 
       // Save to database
       await supabase.from("registrations").insert([dbData]);
+
+
 
       // Send confirmation email with full registration data
       const registrationData: RegistrationData = {

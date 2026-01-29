@@ -1,26 +1,31 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { events, categories, type Event } from "@/data/festivalData";
-import { EventCard } from "./EventCard";
-import { ProfessionalRegistrationModal } from "./ProfessionalRegistrationModal";
+import { auditionEvents } from "@/data/festivalData";
+import { AuditionCard } from "./AuditionCard";
+import type { AuditionEvent } from "@/data/festivalData";
 
-export const EventsSection = () => {
+const auditionCategories = [
+  { id: "all", name: "All Auditions", icon: "🎭" },
+  { id: "dance", name: "Dance", icon: "💃" },
+  { id: "singing", name: "Singing", icon: "🎤" },
+  { id: "instrument", name: "Instrument", icon: "🎵" },
+  { id: "fashion", name: "Fashion", icon: "👗" },
+];
+
+export const AuditionSection = () => {
   const [activeCategory, setActiveCategory] = useState("all");
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredEvents =
     activeCategory === "all"
-      ? events
-      : events.filter((event) => event.category === activeCategory);
+      ? auditionEvents
+      : auditionEvents.filter((event) => event.category === activeCategory);
 
-  const handleRegister = (event: Event) => {
-    setSelectedEvent(event);
-    setIsModalOpen(true);
+  const handleRegister = (formUrl: string) => {
+    window.open(formUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
   };
 
   return (
-    <section id="events" className="py-24 relative">
+    <section id="auditions" className="py-24 relative">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <motion.div
@@ -30,9 +35,9 @@ export const EventsSection = () => {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="section-header mb-4">Events & Competitions</h2>
+          <h2 className="section-header mb-4">Auditions</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose your battlefield. Register, compete, and win amazing prizes! (Note*: There are no Auditions for the following events.)
+            Showcase your talent and compete in our exciting audition events. Register now for your chance to shine!(Note*:Auditions are compulsory for all participants.)
           </p>
         </motion.div>
 
@@ -44,7 +49,7 @@ export const EventsSection = () => {
           viewport={{ once: true }}
           className="flex flex-wrap justify-center gap-3 mb-12"
         >
-          {categories.map((category) => (
+          {auditionCategories.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
@@ -75,7 +80,7 @@ export const EventsSection = () => {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
               >
-                <EventCard event={event} onRegister={handleRegister} />
+                <AuditionCard event={event} onRegister={handleRegister} />
               </motion.div>
             ))}
           </AnimatePresence>
@@ -88,21 +93,11 @@ export const EventsSection = () => {
             className="text-center py-20"
           >
             <p className="text-muted-foreground text-lg">
-              No events found in this category.
+              No audition events found in this category.
             </p>
           </motion.div>
         )}
       </div>
-
-      {/* Registration Modal */}
-      <ProfessionalRegistrationModal
-        event={selectedEvent}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedEvent(null);
-        }}
-      />
     </section>
   );
 };

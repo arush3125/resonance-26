@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Google Sheets Integration Test</h1>
+        <p>This page tests the Google Sheets connection for registration data.</p>
+        
+        <div class="form-group">
+            <label>Test Type:</label>
+            <select id="testType">
+                <option value="webhook">Test Webhook (Current Method)</option>
+                <option value="direct">Test Direct API</option>
+                <option value="simple">Test Simple POST</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Registration Data:</label>
+            <input type="text" id="name" placeholder="Name" value="Test User">
+            <input type="email" id="email" placeholder="Email" value="test@example.com">
+            <input type="tel" id="phone" placeholder="Phone" value="1234567890">
+            <input type="text" id="college" placeholder="College" value="Test College">
+            <input type="text" id="branch" placeholder="Branch" value="CS">
+            <input type="text" id="year" placeholder="Year" value="3">
+            <input type="text" id="eventName" placeholder="Event Name" value="Test Event">
+        </div>
+
+        <button onclick="testGoogleSheets()">🚀 Test Google Sheets</button>
+        <button onclick="testSimpleWebhook()">📡 Test Simple Webhook</button>
+        <button onclick="clearResults()">🗑️ Clear Results</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            resultDiv.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+
+        async function testGoogleSheets() {
+            log('🧪 Starting Google Sheets test...', 'info');
+            
+            const testType = document.getElementById('testType').value;
+            const testData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                college: document.getElementById('college').value,
+                branch: document.getElementById('branch').value,
+                year: document.getElementById('year').value,
+                event_name: document.getElementById('eventName').value,
+                event_id: 'test-event',
+                registration_type: 'solo',
+                team_name: '',
+                team_size: 1,
+                entry_fee: 100,
+                razorpay_payment_id: 'test-payment-' + Date.now(),
+                payment_status: 'success'
+            };
+
+            try {
+                if (testType === 'webhook') {
+                    await testWebhook(testData);
+                } else if (testType === 'direct') {
+                    await testDirectAPI(testData);
+                } else if (testType === 'simple') {
+                    await testSimplePOST(testData);
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testWebhook(data) {
+            log('📡 Testing webhook method...', 'info');
+            
+            const webhookUrl = 'https://script.google.com/macros/s/AKfycbxd3WA32_vHncrKks9l3hQs_yIUeqkOlp7NvGTIlygwagO5EpI-WwROsW9hHCna8epBQQ/exec';
+            
+            const payload = {
+                type: 'registration',
+                sheet: 'Registrations',
+                data: [
+                    data.name,
+                    data.email,
+                    data.phone,
+                    data.college,
+                    data.branch,
+                    data.year,
+                    data.event_id,
+                    data.event_name,
+                    data.registration_type,
+                    data.team_name,
+                    data.team_size,
+                    data.entry_fee,
+                    data.razorpay_payment_id,
+                    data.payment_status,
+                    new Date().toLocaleString()
+                ]
+            };
+
+            log(`📤 Sending to webhook: ${webhookUrl}`, 'info');
+            log(`📋 Payload: ${JSON.stringify(payload, null, 2)}`, 'info');
+
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            log(`📊 Response status: ${response.status} ${response.statusText}`, 'info');
+            
+            const responseText = await response.text();
+            log(`📄 Response body: ${responseText}`, 'info');
+
+            if (response.ok) {
+                log('✅ Webhook test successful!', 'success');
+            } else {
+                log(`❌ Webhook failed with status: ${response.status}`, 'error');
+            }
+        }
+
+        async function testDirectAPI(data) {
+            log('🔗 Testing direct Google Sheets API...', 'info');
+            log('⚠️ This requires API key and proper setup', 'error');
+        }
+
+        async function testSimplePOST(data) {
+            log('📮 Testing simple POST request...', 'info');
+            
+            // Test with a simple webhook tester
+            const testUrl = 'https://httpbin.org/post';
+            
+            const response = await fetch(testUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            log(`✅ Simple POST successful!`, 'success');
+            log(`📋 Received data: ${JSON.stringify(result.json, null, 2)}`, 'info');
+        }
+
+        async function testSimpleWebhook() {
+            log('🎯 Testing with minimal data...', 'info');
+            
+            const webhookUrl = 'https://script.google.com/macros/s/AKfycbxd3WA32_vHncrKks9l3hQs_yIUeqkOlp7NvGTIlygwagO5EpI-WwROsW9hHCna8epBQQ/exec';
+            
+            const simplePayload = {
+                test: true,
+                message: 'Hello from test page',
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(simplePayload)
+                });
+
+                log(`📊 Simple test status: ${response.status}`, 'info');
+                const responseText = await response.text();
+                log(`📄 Simple test response: ${responseText}`, 'info');
+
+                if (response.ok) {
+                    log('✅ Simple webhook test successful!', 'success');
+                } else {
+                    log(`❌ Simple webhook failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Simple test error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('result').innerHTML = '';
+            log('🗑️ Results cleared', 'info');
+        }
+
+        // Test on page load
+        window.onload = function() {
+            log('🚀 Google Sheets Test Page Loaded', 'info');
+            log('💡 Fill in the form and click "Test Google Sheets" to begin', 'info');
+        };
+    </script>
+</body>
+</html>

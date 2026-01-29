@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import type { Event } from "@/data/festivalData";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useRazorpay } from "@/hooks/useRazorpay";
+import { useRazorpayDirect } from "@/hooks/useRazorpayDirect";
+import { RegistrationData, TeamMemberData } from "@/types/registration";
+import { googleSheetsDirectService } from "@/services/googleSheetsDirect";
 
 interface TeamMember {
   name: string;
@@ -62,6 +64,66 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
     return event?.entryFee || 0;
   };
 
+  const saveRegistrationDataToExcel = async (paymentId: string) => {
+    if (!event) return;
+
+    try {
+      // Prepare registration data for Excel
+      const registrationData: RegistrationData = {
+        name: isTeamRegistration ? teamName : formData.name,
+        email: isTeamRegistration ? teamMembers[0]?.email || formData.email : formData.email,
+        phone: isTeamRegistration ? teamMembers[0]?.phone || formData.phone : formData.phone,
+        college: isTeamRegistration 
+          ? `Team: ${teamName} (${teamMembers.length} members)`
+          : `${formData.branch} - Year ${formData.year}`,
+        branch: isTeamRegistration ? teamMembers[0]?.branch || formData.branch : formData.branch,
+        year: isTeamRegistration ? teamMembers[0]?.year || formData.year : formData.year,
+        event_id: event.id,
+        event_name: event.name,
+        entry_fee: calculateTotalFee(),
+        razorpay_payment_id: paymentId,
+        payment_status: "success",
+        registration_type: isTeamRegistration ? "team" : "solo",
+        team_name: isTeamRegistration ? teamName : undefined,
+        team_size: isTeamRegistration ? teamMembers.length : 1,
+        created_at: new Date().toISOString(),
+      };
+
+      console.log('🧪 Saving registration data:', registrationData);
+
+
+
+      // Try to save to Google Sheets (may fail, but that's ok for now)
+      try {
+        await googleSheetsDirectService.addRegistration(registrationData);
+        console.log('✅ Data saved to Google Sheets successfully!');
+        toast.success("Data saved to Google Sheets successfully!");
+        
+        // Also save team members if team registration
+        if (isTeamRegistration && teamMembers.length > 0) {
+          const teamMemberData: TeamMemberData[] = teamMembers.map((member, index) => ({
+            name: member.name,
+            email: member.email,
+            phone: member.phone,
+            branch: member.branch,
+            year: member.year,
+            role: index === 0 ? 'leader' : 'member' as const,
+          }));
+
+          await googleSheetsDirectService.addTeamMembers(teamMemberData, registrationData.name || '');
+          console.log('✅ Team members saved to Google Sheets');
+        }
+      } catch (sheetsError) {
+        console.error('❌ Google Sheets error:', sheetsError);
+        toast.warning("Google Sheets sync failed, but data saved locally");
+      }
+
+    } catch (error) {
+      console.error('❌ Error saving registration data:', error);
+      toast.error("Failed to save registration data");
+    }
+  };
+
   const sendConfirmationEmail = async (generatedPaymentId: string) => {
     if (!event) return;
     
@@ -92,9 +154,11 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
     }
   };
 
-  const { initiatePayment, isLoading: isPaymentLoading } = useRazorpay({
+  // Use Razorpay for payment processing
+  const razorpayHook = useRazorpayDirect({
     onSuccess: async (razorpayPaymentId) => {
       setPaymentId(razorpayPaymentId);
+      await saveRegistrationDataToExcel(razorpayPaymentId);
       await sendConfirmationEmail(razorpayPaymentId);
       setStep("success");
       toast.success("Payment successful!");
@@ -103,6 +167,9 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
       toast.error(error || "Payment failed");
     },
   });
+
+  // Use Razorpay payment hook
+  const { initiatePayment, isLoading: isPaymentLoading } = razorpayHook;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

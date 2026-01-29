@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Calendar, Users, Phone, Mail, MapPin } from "lucide-react";
+import { Menu, X, ChevronDown, Calendar, Users, Phone, Mail, MapPin, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { festivalInfo } from "@/data/festivalData";
 
@@ -43,12 +43,14 @@ export const Navigation = () => {
       href: "#about",
     },
     {
+      label: "Auditions",
+      href: "#auditions",
+    },
+    {
       label: "Events",
       href: "#events",
       dropdown: [
         { label: "All Events", href: "#events" },
-        { label: "Singing", href: "#events?category=music" },
-        { label: "Dance", href: "#events?category=dance" },
         { label: "Other Talents", href: "#events?category=fun" },
         { label: "Creative", href: "#events?category=culture" },
       ],
@@ -70,6 +72,10 @@ export const Navigation = () => {
   const handleNavClick = (item: NavItem) => {
     if (item.dropdown) {
       setActiveDropdown(activeDropdown === item.label ? null : item.label);
+    } else if (item.href.startsWith('/')) {
+      // Handle external routes
+      window.location.href = item.href;
+      setIsOpen(false);
     } else {
       const sectionId = item.href.replace("#", "");
       scrollToSection(sectionId);
@@ -93,17 +99,23 @@ export const Navigation = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3"
+              onClick={() => scrollToSection('home')}
+              style={{ cursor: 'pointer' }}
             >
               <img
                 src="/1.png"
-                alt="Festival Logo"
-                className="w-24 h-24 object-contain rounded-lg"
+                alt="Resonance Festival Logo"
+                className="w-16 h-16 object-contain rounded-lg"
               />
               <img
                 src="/Council Logo.png"
                 alt="Council Logo"
-                className="w-24 h-24 object-contain rounded-lg"
+                className="w-16 h-16 object-contain rounded-lg"
               />
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-orbitron font-bold gradient-text">RESONANCE</h1>
+                <p className="text-xs text-muted-foreground">Festival 2026</p>
+              </div>
             </motion.div>
 
             {/* Desktop Menu */}
@@ -204,14 +216,18 @@ export const Navigation = () => {
                   <div className="flex items-center gap-3">
                     <img
                       src="/1.png"
-                      alt="Festival Logo"
-                      className="w-24 h-24 object-contain rounded-lg"
+                      alt="Resonance Festival Logo"
+                      className="w-14 h-14 object-contain rounded-lg"
                     />
                     <img
                       src="/Council Logo.png"
                       alt="Council Logo"
-                      className="w-24 h-24 object-contain rounded-lg"
+                      className="w-14 h-14 object-contain rounded-lg"
                     />
+                    <div>
+                      <h1 className="text-lg font-orbitron font-bold gradient-text">RESONANCE</h1>
+                      <p className="text-xs text-muted-foreground">Festival 2026</p>
+                    </div>
                   </div>
                   <button
                     onClick={() => setIsOpen(false)}

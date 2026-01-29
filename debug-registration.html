@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Registration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Debug Registration Test</h1>
+    
+    <form id="registrationForm">
+        <div class="form-group">
+            <label>Name:</label>
+            <input type="text" id="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Phone:</label>
+            <input type="tel" id="phone" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Branch:</label>
+            <select id="branch" required>
+                <option value="">Select Branch</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Information Technology">Information Technology</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Mechanical">Mechanical</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Year:</label>
+            <select id="year" required>
+                <option value="">Select Year</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Event:</label>
+            <select id="event" required>
+                <option value="">Select Event</option>
+                <option value="singing">Singing Competition</option>
+                <option value="dancing">Dancing Competition</option>
+                <option value="coding">Coding Competition</option>
+            </select>
+        </div>
+        
+        <button type="submit">🧪 Test Registration</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <hr>
+    
+    <h2>📊 Current Data</h2>
+    <button onclick="showData()">Show Current Data</button>
+    <button onclick="clearData()">Clear All Data</button>
+    <div id="currentData"></div>
+
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                branch: document.getElementById('branch').value,
+                year: document.getElementById('year').value,
+                event: document.getElementById('event').value
+            };
+            
+            // Create registration data
+            const registrationData = {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                college: `${formData.branch} - Year ${formData.year}`,
+                event_id: formData.event,
+                event_name: getEventName(formData.event),
+                entry_fee: 100,
+                razorpay_payment_id: `test_pay_${Date.now()}`,
+                payment_status: "success",
+                registration_type: "solo",
+                team_name: undefined,
+                team_size: 1,
+                created_at: new Date().toISOString()
+            };
+            
+            try {
+                // Save to localStorage
+                const existingData = JSON.parse(localStorage.getItem('registrationData') || '[]');
+                existingData.push(registrationData);
+                localStorage.setItem('registrationData', JSON.stringify(existingData));
+                
+                console.log('✅ Registration saved:', registrationData);
+                console.log('📊 Total registrations:', existingData.length);
+                
+                document.getElementById('result').innerHTML = 
+                    `<div class="success">✅ Registration successful! Total registrations: ${existingData.length}</div>`;
+                
+                // Clear form
+                document.getElementById('registrationForm').reset();
+                
+                // Show current data
+                showData();
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('result').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        });
+        
+        function getEventName(eventId) {
+            const events = {
+                'singing': 'Singing Competition',
+                'dancing': 'Dancing Competition',
+                'coding': 'Coding Competition'
+            };
+            return events[eventId] || eventId;
+        }
+        
+        function showData() {
+            const registrations = JSON.parse(localStorage.getItem('registrationData') || '[]');
+            const teamMembers = JSON.parse(localStorage.getItem('teamMemberData') || '[]');
+            
+            let html = `<h3>📊 Registrations: ${registrations.length}</h3>`;
+            
+            if (registrations.length > 0) {
+                html += '<table border="1" style="width: 100%; border-collapse: collapse;">';
+                html += '<tr><th>Name</th><th>Email</th><th>Event</th><th>Payment ID</th></tr>';
+                
+                registrations.forEach(reg => {
+                    html += `<tr>
+                        <td>${reg.name}</td>
+                        <td>${reg.email}</td>
+                        <td>${reg.event_name}</td>
+                        <td>${reg.razorpay_payment_id}</td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+            } else {
+                html += '<p>No registrations found.</p>';
+            }
+            
+            document.getElementById('currentData').innerHTML = html;
+        }
+        
+        function clearData() {
+            if (confirm('Clear all registration data?')) {
+                localStorage.removeItem('registrationData');
+                localStorage.removeItem('teamMemberData');
+                document.getElementById('currentData').innerHTML = '<p>All data cleared.</p>';
+                document.getElementById('result').innerHTML = '';
+            }
+        }
+        
+        // Show current data on load
+        showData();
+    </script>
+</body>
+</html>
