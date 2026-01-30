@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Event } from "@/data/festivalData";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { registrationAPI } from "@/services/registrationAPI";
 import { useRazorpayDirect } from "@/hooks/useRazorpayDirect";
 
 interface Participant {
@@ -40,7 +40,8 @@ interface ProfessionalRegistrationModalProps {
   onClose: () => void;
 }
 
-const YEARS = ["1K", "2K", "3K", "4K"];
+const YEARS = ["2K", "4K", "6K"];
+const BRANCHES = ["AN", "TE", "ME", "CE", "AE"];
 
 export const ProfessionalRegistrationModal = ({ event, isOpen, onClose }: ProfessionalRegistrationModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -187,51 +188,28 @@ export const ProfessionalRegistrationModal = ({ event, isOpen, onClose }: Profes
 
     try {
       // Format data for existing database schema
-      const dbData = {
+      // Prepare data for backend API
+      const apiData = {
         name: registrationType === "solo" ? soloData.name : teamLeader.name,
+        branch: registrationType === "solo" ? soloData.branch : teamLeader.branch,
+        year: registrationType === "solo" ? soloData.year : teamLeader.year,
         email: registrationType === "solo" ? soloData.email : teamLeader.email,
         phone: registrationType === "solo" ? soloData.phone : teamLeader.phone,
-        college: registrationType === "solo" 
-          ? `${soloData.branch} - Year ${soloData.year}`
-          : `Team: ${teamName}`,
-        event_id: event.id,
-        event_name: event.name,
-        entry_fee: calculateAmount(),
-        razorpay_payment_id: paymentId,
-        payment_status: "success",
+        eventName: event.name,
+        teamName: registrationType === "team" ? teamName : undefined,
+        registrationType: registrationType as "solo" | "team",
+        numberOfParticipants: registrationType === "team" ? 1 + numberOfMembers : 1,
+        amountPaid: calculateAmount(),
+        razorpayPaymentId: paymentId,
+        paymentStatus: "success"
       };
 
-      // Save to database
-      await supabase.from("registrations").insert([dbData]);
+      console.log('📤 Sending registration to backend:', apiData);
 
-
-
-      // Send confirmation email with full registration data
-      const registrationData: RegistrationData = {
-        type: registrationType!,
-        eventId: event.id,
-        amount: calculateAmount(),
-        payment: {
-          order_id: "",
-          payment_id: paymentId,
-          status: "success",
-        },
-        timestamp: new Date().toISOString(),
-      };
-
-      if (registrationType === "solo") {
-        registrationData.participant = soloData;
-      } else {
-        registrationData.teamName = teamName;
-        registrationData.leader = teamLeader;
-        registrationData.members = teamMembers;
-        registrationData.totalMembers = 1 + numberOfMembers;
-      }
-
-      await supabase.functions.invoke("send-confirmation-email", {
-        body: registrationData,
-      });
-
+      // Save to backend with retry mechanism
+      await registrationAPI.saveRegistrationWithRetry(apiData, 3);
+      
+      console.log('✅ Registration saved successfully!');
       toast.success("Registration saved successfully!");
     } catch (error) {
       console.error("Error saving registration:", error);
@@ -353,13 +331,19 @@ export const ProfessionalRegistrationModal = ({ event, isOpen, onClose }: Profes
 
         <div>
           <Label htmlFor="soloBranch">Branch</Label>
-          <Input
+          <select
             id="soloBranch"
             value={soloData.branch}
             onChange={(e) => setSoloData({ ...soloData, branch: e.target.value })}
-            placeholder="e.g., Computer Science"
-            className="mt-1"
-          />
+            className="w-full mt-1 px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="">Select Branch</option>
+            {BRANCHES.map((branch) => (
+              <option key={branch} value={branch}>
+                {branch}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
@@ -496,12 +480,18 @@ export const ProfessionalRegistrationModal = ({ event, isOpen, onClose }: Profes
             </div>
             <div>
               <Label>Branch</Label>
-              <Input
+              <select
                 value={teamLeader.branch}
                 onChange={(e) => setTeamLeader({ ...teamLeader, branch: e.target.value })}
-                placeholder="Branch"
-                className="mt-1"
-              />
+                className="w-full mt-1 px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">Select Branch</option>
+                {BRANCHES.map((branch) => (
+                  <option key={branch} value={branch}>
+                    {branch}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <Label>Year</Label>
@@ -563,12 +553,18 @@ export const ProfessionalRegistrationModal = ({ event, isOpen, onClose }: Profes
                 </div>
                 <div>
                   <Label>Branch</Label>
-                  <Input
+                  <select
                     value={member.branch}
                     onChange={(e) => handleTeamMemberChange(index, 'branch', e.target.value)}
-                    placeholder="Branch"
-                    className="mt-1"
-                  />
+                    className="w-full mt-1 px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">Select Branch</option>
+                    {BRANCHES.map((branch) => (
+                      <option key={branch} value={branch}>
+                        {branch}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <Label>Year</Label>

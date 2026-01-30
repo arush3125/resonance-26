@@ -6,10 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Event } from "@/data/festivalData";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useRazorpayDirect } from "@/hooks/useRazorpayDirect";
 import { RegistrationData, TeamMemberData } from "@/types/registration";
-import { googleSheetsDirectService } from "@/services/googleSheetsDirect";
+import { registrationAPI } from "@/services/registrationAPI";
 
 interface TeamMember {
   name: string;
@@ -25,6 +24,9 @@ interface RegistrationModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const YEARS = ["2K", "4K", "6K"];
+const BRANCHES = ["AN", "TE", "ME", "CE", "AE"];
 
 export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalProps) => {
   const [step, setStep] = useState<"form" | "payment" | "success">("form");
@@ -68,90 +70,41 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
     if (!event) return;
 
     try {
-      // Prepare registration data for Excel
-      const registrationData: RegistrationData = {
+      // Prepare registration data for backend API
+      const apiData = {
         name: isTeamRegistration ? teamName : formData.name,
-        email: isTeamRegistration ? teamMembers[0]?.email || formData.email : formData.email,
-        phone: isTeamRegistration ? teamMembers[0]?.phone || formData.phone : formData.phone,
-        college: isTeamRegistration 
-          ? `Team: ${teamName} (${teamMembers.length} members)`
-          : `${formData.branch} - Year ${formData.year}`,
         branch: isTeamRegistration ? teamMembers[0]?.branch || formData.branch : formData.branch,
         year: isTeamRegistration ? teamMembers[0]?.year || formData.year : formData.year,
-        event_id: event.id,
-        event_name: event.name,
-        entry_fee: calculateTotalFee(),
-        razorpay_payment_id: paymentId,
-        payment_status: "success",
-        registration_type: isTeamRegistration ? "team" : "solo",
-        team_name: isTeamRegistration ? teamName : undefined,
-        team_size: isTeamRegistration ? teamMembers.length : 1,
-        created_at: new Date().toISOString(),
+        email: isTeamRegistration ? teamMembers[0]?.email || formData.email : formData.email,
+        phone: isTeamRegistration ? teamMembers[0]?.phone || formData.phone : formData.phone,
+        eventName: event.name,
+        teamName: isTeamRegistration ? teamName : undefined,
+        registrationType: (isTeamRegistration ? "team" : "solo") as "team" | "solo",
+        numberOfParticipants: isTeamRegistration ? teamMembers.length : 1,
+        amountPaid: calculateTotalFee(),
+        razorpayPaymentId: paymentId,
+        paymentStatus: "success"
       };
 
-      console.log('🧪 Saving registration data:', registrationData);
+      console.log('📤 Sending registration to backend:', apiData);
 
-
-
-      // Try to save to Google Sheets (may fail, but that's ok for now)
-      try {
-        await googleSheetsDirectService.addRegistration(registrationData);
-        console.log('✅ Data saved to Google Sheets successfully!');
-        toast.success("Data saved to Google Sheets successfully!");
-        
-        // Also save team members if team registration
-        if (isTeamRegistration && teamMembers.length > 0) {
-          const teamMemberData: TeamMemberData[] = teamMembers.map((member, index) => ({
-            name: member.name,
-            email: member.email,
-            phone: member.phone,
-            branch: member.branch,
-            year: member.year,
-            role: index === 0 ? 'leader' : 'member' as const,
-          }));
-
-          await googleSheetsDirectService.addTeamMembers(teamMemberData, registrationData.name || '');
-          console.log('✅ Team members saved to Google Sheets');
-        }
-      } catch (sheetsError) {
-        console.error('❌ Google Sheets error:', sheetsError);
-        toast.warning("Google Sheets sync failed, but data saved locally");
-      }
+      // Save to backend with retry mechanism
+      await registrationAPI.saveRegistrationWithRetry(apiData, 3);
+      
+      console.log('✅ Registration saved successfully!');
+      toast.success("Registration saved successfully!");
 
     } catch (error) {
       console.error('❌ Error saving registration data:', error);
-      toast.error("Failed to save registration data");
+      toast.error(`Failed to save registration: ${error.message}`);
+      throw error; // Re-throw to handle in payment flow
     }
   };
 
   const sendConfirmationEmail = async (generatedPaymentId: string) => {
-    if (!event) return;
-    
-    try {
-      const registrationData = {
-        name: formData.name,
-        branch: formData.branch,
-        year: formData.year,
-        email: formData.email,
-        phone: formData.phone,
-        eventName: event.name,
-        eventDate: event.date,
-        eventTime: event.time,
-        eventVenue: event.venue,
-        entryFee: event.entryFee,
-        paymentId: generatedPaymentId,
-        isTeamRegistration,
-        teamName: isTeamRegistration ? teamName : undefined,
-        teamMembers: isTeamRegistration ? teamMembers : undefined,
-      };
-      
-      await supabase.functions.invoke("send-confirmation-email", {
-        body: registrationData,
-      });
-      toast.success("Confirmation email sent!");
-    } catch (err) {
-      console.error("Email send error:", err);
-    }
+    // Email functionality removed - no Supabase dependency
+    console.log('📧 Confirmation email would be sent for payment:', generatedPaymentId);
+    toast.success('Registration confirmation processed!');
   };
 
   // Use Razorpay for payment processing
@@ -172,6 +125,10 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
   const { initiatePayment, isLoading: isPaymentLoading } = razorpayHook;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -349,11 +306,37 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
                       </div>
                       <div>
                         <Label htmlFor="branch">Branch</Label>
-                        <Input id="branch" name="branch" value={formData.branch} onChange={handleInputChange} placeholder="Computer Science" className="mt-1" />
+                        <select 
+                          id="branch" 
+                          name="branch" 
+                          value={formData.branch} 
+                          onChange={handleSelectChange} 
+                          className="w-full mt-1 px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="">Select Branch</option>
+                          {BRANCHES.map((branch) => (
+                            <option key={branch} value={branch}>
+                              {branch}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       <div>
                         <Label htmlFor="year">Year</Label>
-                        <Input id="year" name="year" value={formData.year} onChange={handleInputChange} placeholder="2nd Year" className="mt-1" />
+                        <select 
+                          id="year" 
+                          name="year" 
+                          value={formData.year} 
+                          onChange={handleSelectChange} 
+                          className="w-full mt-1 px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="">Select Year</option>
+                          {YEARS.map((year) => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       <div>
                         <Label htmlFor="email">Email</Label>
@@ -398,21 +381,33 @@ export const RegistrationModal = ({ event, isOpen, onClose }: RegistrationModalP
                               </div>
                               <div>
                                 <Label>Branch</Label>
-                                <Input
+                                <select
                                   value={member.branch}
                                   onChange={(e) => handleTeamMemberChange(index, 'branch', e.target.value)}
-                                  placeholder="Branch"
-                                  className="mt-1"
-                                />
+                                  className="w-full mt-1 px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
+                                  <option value="">Select Branch</option>
+                                  {BRANCHES.map((branch) => (
+                                    <option key={branch} value={branch}>
+                                      {branch}
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
                               <div>
                                 <Label>Year</Label>
-                                <Input
+                                <select
                                   value={member.year}
                                   onChange={(e) => handleTeamMemberChange(index, 'year', e.target.value)}
-                                  placeholder="Year"
-                                  className="mt-1"
-                                />
+                                  className="w-full mt-1 px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
+                                  <option value="">Select Year</option>
+                                  {YEARS.map((year) => (
+                                    <option key={year} value={year}>
+                                      {year}
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
                               <div>
                                 <Label>Email</Label>

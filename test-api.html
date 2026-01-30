@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Registration API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 10px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Registration API</h1>
+    
+    <div class="info">
+        <strong>Backend Server:</strong> http://localhost:3004<br>
+        <strong>Google Sheet ID:</strong> 1sQc3q7OfeYhqUCiwRpVt3mFqqdL_p333-1aYu5FxP8Y
+    </div>
+
+    <button onclick="testHealth()">🏥 Test Health</button>
+    <button onclick="testRegistration()">📝 Test Registration</button>
+    <button onclick="clearResults()">🗑️ Clear Results</button>
+
+    <div id="results"></div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong><br>${message}`;
+            results.appendChild(div);
+        }
+
+        async function testHealth() {
+            addResult('Testing health endpoint...', 'info');
+            try {
+                const response = await fetch('http://localhost:3004/api/health');
+                const data = await response.json();
+                addResult(`✅ Health Check Success:<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+            } catch (error) {
+                addResult(`❌ Health Check Failed:<br>${error.message}`, 'error');
+            }
+        }
+
+        async function testRegistration() {
+            addResult('Testing registration endpoint...', 'info');
+            
+            const testData = {
+                name: "Test User",
+                branch: "Computer Science",
+                year: "3",
+                email: "test@example.com",
+                phone: "1234567890",
+                eventName: "Test Event",
+                registrationType: "solo",
+                numberOfParticipants: 1,
+                amountPaid: 100,
+                razorpayPaymentId: "test_payment_123",
+                paymentStatus: "success"
+            };
+
+            try {
+                const response = await fetch('http://localhost:3004/api/registration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ Registration Success:<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                    addResult(`📊 Check your Google Sheet: <a href="https://docs.google.com/spreadsheets/d/1sQc3q7OfeYhqUCiwRpVt3mFqqdL_p333-1aYu5FxP8Y/edit" target="_blank">Open Sheet</a>`, 'info');
+                } else {
+                    addResult(`❌ Registration Failed:<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Registration Error:<br>${error.message}`, 'error');
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // Auto-test health on page load
+        window.onload = () => {
+            setTimeout(testHealth, 1000);
+        };
+    </script>
+</body>
+</html>

@@ -15,28 +15,28 @@ export const TeamSection = () => {
     
     {
     id: 2,
-    name: "Sara Pathak",
-    role: "Sports Secretary",
-    email: "sara@resonance2026.com",
-    phone: "+91 89280 05205",
+    name: "Aarya Bhalerao",
+    role: "Girls representative",
+    email: "aarya@resonance2026.com",
+    phone: "+91 90047 83103",
     image: "/team/10.png"
   },
     {
       id: 3,
-      name: "Parth Naukudkar",
-      role: "Technical Secretary",
-      email: "parth@resonance26.com",
-      phone: "+91 88281 67334",
-      linkedin: "https://linkedin.com/in/parth-naukudkar",
+      name: "Samriti Vishwakarma",
+      role: "Cultural Secretary",
+      email: "samriti@resonance26.com",
+      phone: "+91 98928 62025",
+      linkedin: "https://linkedin.com/in/samriti-vishwakarma",
       image: "/team/11.png"
     },
     {
       id: 4,
-      name: "Swara Hande",
-      role: "Marketing Lead",
-      email: "swara@resonance26.com",
-      phone: "+91 93724 72223",
-      linkedin: "https://linkedin.com/in/swara-hande",
+      name: "Jatin Sharma",
+      role: "Cultural Secretary",
+      email: "jatin@resonance26.com",
+      phone: "+91 92200 49222",
+      linkedin: "https://linkedin.com/in/jatin-sharma",
       image: "/team/12.png"
     }
   ];
